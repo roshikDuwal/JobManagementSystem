@@ -1,3 +1,5 @@
+using JobManagementSystem.API.Configuration;
+using JobManagementSystem.API.Repositories;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +10,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
+builder.Services.Configure<DatabaseSettings>(builder.Configuration.GetSection(DatabaseSettings.SectionName));
+
+builder.Services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
+builder.Services.AddScoped<HealthRepository>();
+builder.Services.AddScoped<CompanyRepository>();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -18,6 +26,7 @@ builder.Services.AddSwaggerGen(options =>
         Description = "Production-ready Job Management System API built with ASP.NET Core"
     });
 });
+
 
 var app = builder.Build();
 
