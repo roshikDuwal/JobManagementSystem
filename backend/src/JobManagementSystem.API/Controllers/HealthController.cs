@@ -1,4 +1,5 @@
-﻿using JobManagementSystem.API.Repositories;
+﻿
+using JobManagementSystem.Application.Interfaces.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,12 +7,12 @@ namespace JobManagementSystem.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class HealthController : ControllerBase
+    public class HealthController:ControllerBase
     {
 
-        private readonly HealthRepository _healthRepository;
+        private readonly IHealthRepository _healthRepository;
 
-        public HealthController(HealthRepository healthRepository)
+        public HealthController(IHealthRepository healthRepository)
         {
             _healthRepository = healthRepository;   
         }

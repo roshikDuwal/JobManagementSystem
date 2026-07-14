@@ -1,5 +1,11 @@
-using JobManagementSystem.API.Configuration;
-using JobManagementSystem.API.Repositories;
+using FluentValidation;
+using JobManagementSystem.Application.Abstractions.Repositories;
+using JobManagementSystem.Application.Companies.Validators;
+using JobManagementSystem.Application.Interfaces.Persistence;
+using JobManagementSystem.Application.Interfaces.Repositories;
+using JobManagementSystem.Infrastructure.Configurations;
+using JobManagementSystem.Infrastructure.Persistence;
+using JobManagementSystem.Infrastructure.Repositories;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,10 +17,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.Configure<DatabaseSettings>(builder.Configuration.GetSection(DatabaseSettings.SectionName));
-
+builder.Services.AddValidatorsFromAssemblyContaining<CreateCompanyRequestValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<UpdateCompanyRequestValidator>();
 builder.Services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
-builder.Services.AddScoped<HealthRepository>();
-builder.Services.AddScoped<CompanyRepository>();
+builder.Services.AddScoped<IHealthRepository, HealthRepository>();
+builder.Services.AddScoped<ICompanyRepository,CompanyRepository>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>

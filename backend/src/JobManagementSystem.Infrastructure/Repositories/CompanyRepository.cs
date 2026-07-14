@@ -1,12 +1,13 @@
 ﻿using Dapper;
-using JobManagementSystem.API.Configuration;
-using JobManagementSystem.API.Models;
-using JobManagementSystem.API.Models.DTOs;
+using JobManagementSystem.Application.Abstractions.Repositories;
+using JobManagementSystem.Application.Companies.Commands;
+using JobManagementSystem.Application.Interfaces.Persistence;
+using JobManagementSystem.Domain.Entities;
 using System.Data;
 
-namespace JobManagementSystem.API.Repositories
+namespace JobManagementSystem.Infrastructure.Repositories
 {
-    public class CompanyRepository
+    public sealed class CompanyRepository : ICompanyRepository
     {
         private readonly IDbConnectionFactory _connectionFactory;
 
@@ -17,7 +18,7 @@ namespace JobManagementSystem.API.Repositories
 
         public async Task<int> CreateCompanyAsync(CreateCompanyRequest request)
         {
-            using var connection=_connectionFactory.CreateConnection();
+            using var connection = _connectionFactory.CreateConnection();
             var sql = @"
              INSERT INTO Companies
                 (
@@ -45,11 +46,10 @@ namespace JobManagementSystem.API.Repositories
             ";
             return await connection.ExecuteScalarAsync<int>(sql, request);
         }
-
         public async Task<IEnumerable<Company>> GetAllCompaniesAsync()
         {
             using var connection = _connectionFactory.CreateConnection();
-            const string sql= @"
+            const string sql = @"
                 SELECT
                     CompanyId,
                     CompanyName,
@@ -70,7 +70,6 @@ namespace JobManagementSystem.API.Repositories
 
             return await connection.QueryAsync<Company>(sql);
         }
-
         public async Task<Company?> GetCompanyByIdAsync(int companyId)
         {
             using var connection = _connectionFactory.CreateConnection();
@@ -95,13 +94,12 @@ namespace JobManagementSystem.API.Repositories
             ";
             var parameters = new DynamicParameters();
 
-            parameters.Add("CompanyId", companyId,DbType.Int32);
+            parameters.Add("CompanyId", companyId, DbType.Int32);
             return await connection.QueryFirstOrDefaultAsync<Company>(sql, parameters);
         }
-
         public async Task<bool> UpdateCompanyAsync(int companyId, UpdateCompanyRequest request)
         {
-            using var connection=_connectionFactory.CreateConnection();
+            using var connection = _connectionFactory.CreateConnection();
             const string sql = @"
                 UPDATE Companies
                 SET
@@ -119,6 +117,17 @@ namespace JobManagementSystem.API.Repositories
                 WHERE CompanyId = @CompanyId;
             ";
             var parameters = new DynamicParameters(request);
+            parameters.Add("CompanyId", companyId, DbType.Int32);
+            var rowsAffected = await connection.ExecuteAsync(sql, parameters);
+            return rowsAffected > 0;
+        }
+        public async Task<bool> DeleteCompanyAsync(int companyId)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            const string sql = @"
+                Update Companies SET IsActive=FALSE,UpdatedAt=CURRENT_TIMESTAMP WHERE CompanyId=@CompanyId AND IsActive=TRUE;
+            ";
+            var parameters = new DynamicParameters();
             parameters.Add("CompanyId", companyId, DbType.Int32);
             var rowsAffected = await connection.ExecuteAsync(sql, parameters);
             return rowsAffected > 0;
